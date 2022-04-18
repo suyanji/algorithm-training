@@ -1,0 +1,149 @@
+##计时语句
+t1=proc.time()
+print(paste0('执行时间：',(proc.time()-t1)[3][[1]],'秒'))
+
+##斐波那契数列
+
+###递归：时间复杂度O(2^n)；空间复杂度O(n)
+fun1 <- function(n){
+	if(n%%1==0 & n>0){
+		if(n==1 | n==2){
+			return(1)
+		}else{
+			return(fun(n-1)+fun(n-2))
+		}
+	}else{
+		return("输入有误")
+	}
+}
+
+###尾递归：时间复杂度O(N-2)约等于0(N)；空间复杂度O(N-2)约等于0(N)（编译器如果优化的话是O（1））
+fun2 <- function(first,second,n){
+	if(n%%1==0 & n>0){
+		if(n==1 | n==2){
+			return(1)
+		}else{
+			if(n==3){
+				return(first+second)
+			}else{
+				return(fun2(second,first+second,n-1))
+			}
+		}
+	}else{
+		return("输入有误")
+	}
+}
+
+###数组：时间复杂度O(n)；空间复杂度O(n)
+fun3 <- function(n){
+	if(n%%1==0 & n>0){
+		a <- vector()
+		if(n==1 | n==2){
+			return(1)
+		}else{
+			a[1] <- 1
+			a[2] <- 1
+			for(i in 3:n){
+				a[i] <- a[i-1] + a[i-2]
+			}
+			return(a[n])
+		}
+	}else{
+		return("输入有误")
+	}
+}
+
+###迭代：时间复杂度O(n)；空间复杂度O(1)
+fun4 <- function(n){
+	if(n%%1==0 & n>0){
+		if(n==1 | n==2){
+			return(1)
+		}else{
+			s1 <- 1
+			s2 <- 1
+			for(i in 3:n){
+				s2 <- s1 + s2
+				s1 <- s2 - s1
+			}
+			return(s2)
+		}
+	}else{
+		return("输入有误")
+	}
+}
+
+###数学公式：从0开始，直到n-1计算矩阵的n-1次幂，时间复杂度仍然是O(n)
+calPowerOfMatrix <- function(matrix,n){		###计算matrix与{{1,1},{1,0}}矩阵的n次幂的乘积
+	i <- 0
+	while(i < n-1){
+		a <- matrix[1,1]
+		b <- matrix[1,2]
+		c <- matrix[2,1]
+		d <- matrix[2,2]
+		matrix[1,1] <- a + b
+		matrix[1,2] <- a
+		matrix[2,1] <- c + d
+		matrix[2,2] <- c
+		i <- i + 1
+	}
+	return(matrix)
+}
+fibonacci <- function(n){
+	if(n%%1==0 & n>0){
+		basicMatrix <- matrix(c(1,1,1,0),2,2)
+		matrix <- calPowerOfMatrix(basicMatrix, n-1)
+		return(matrix[1,1])
+	}else{
+		return("输入有误")
+	}
+}
+
+###利用乘方的性质，使用二分法来递归实现斐波那契数列的求解，复杂度可以达到O(logn)
+calBasicMutipyOfMatrix <- function(matrix){				###计算matrix与{{1,1},{1,0}}的乘积
+	a <- matrix[1,1]
+	b <- matrix[1,2]
+	c <- matrix[2,1]
+	d <- matrix[2,2]
+	matrix[1,1] <- a + b
+	matrix[1,2] <- a
+	matrix[2,1] <- c + d
+	matrix[2,2] <- c
+	return(matrix)
+}
+calSquareOfMatrix <- function(matrix){					###计算matrix的平方
+	a <- matrix[1,1]
+	b <- matrix[1,2]
+	c <- matrix[2,1]
+	d <- matrix[2,2]	
+	matrix[1,1] <- a*a + b*c
+	matrix[1,2] <- a*b + b*d
+	matrix[2,1] <- a*c + c*d
+	matrix[2,2] <- b*c + d*d
+	return(matrix)
+}
+calPowerOfMatrix <- function(matrix,n){
+	if(n<0){
+		return("输入有误")
+	}else{
+		if(n==1){
+			return(matrix)
+		}else if(n%%2==0){					###n为偶数,如果n为偶数，就计算matrix的n/2次幂的2次幂
+			return(calSquareOfMatrix((calPowerOfMatrix(matrix, n/2))))
+		}else{								###n为奇数,如果n为奇数，就计算matrix的n/2次幂的2次幂再乘以matrix
+			return(calBasicMutipyOfMatrix(calSquareOfMatrix(calPowerOfMatrix(matrix, (n - 1)/2))))
+		}
+	}
+}
+fibonacci <- function(n){
+	if(n%%1==0 & n>0){
+		basicMatrix <- matrix(c(1,1,1,0),2,2)
+		if(n==1){
+			return(1)
+		}else{
+			matrix <- calPowerOfMatrix(basicMatrix,n-1)
+			return(matrix[1,1])
+		}
+	}else{
+		return("输入有误")
+	}
+}
