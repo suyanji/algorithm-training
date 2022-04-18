@@ -1,0 +1,68 @@
+##哥德巴赫猜想：任一大于2的偶数，都可以表示成两个素数之和(求n以内所有偶数可以是哪两个素数之和）
+
+###求素数函数1
+all_prime <- function(n){		###求n以内的所有素数
+	if(n%%1==0 & n>=4){
+		ret <- NULL
+		i <- 2 #从2开始判断
+		repeat #循环要判断的数字
+		{
+			if(i >= n) #如果超过100，则跳出
+				break	#此处原代码有';'，貌似不要也一样
+			j <- 2 #用2~i的数j去除i
+			repeat #循环2~i
+			{
+				if(i %% j == 0 || j>i)
+					break
+				j <- j + 1
+			}
+			if( j >= i) #如果j>=n说明n是素数
+				ret <- c(ret, i)
+			i <- i + 1
+		}
+		return(ret)
+	}else{
+		return("输入有误")
+	}
+}
+
+###求素数函数2
+#sushu <- function(x){ifelse(0 %in% c(x %% c(2:ceiling(sqrt(x)))),"FALSE","TRUE")}   ###素数判断函数
+all_prime <- function(n){
+	ret <- 2
+	for(i in 1:n){
+		if(ifelse(0 %in% c(i %% c(2:ceiling(sqrt(i)))),FALSE,TRUE)){ret <- c(ret, i)}
+	}
+	return(ret)
+}
+
+##Goldbach conjecture 主函数
+gb <- function(n){
+	if(n%%1==0 & n>=4){
+		require(tidyverse)
+		a<-4:n
+		even <- a[a%%2==0]
+		prime <- all_prime(n)
+		m <- length(prime)
+		com <- combn(m, 2)
+		mul <- NULL
+		b <- NULL
+		c <- NULL
+		for(k in 1:dim(com)[2]){
+			mul <- c(mul,sum(prime[com[,k]]))
+			b <- c(b,com[,k][1])
+			c <- c(c,com[,k][2])
+		}
+		ret <- cbind(mul,prime[b],prime[c])
+		colnames(ret) <- c("和","素数1","素数2") 
+		d <- tibble('和'=c(4,6),'素数1'=c(2,3),'素数2'=c(2,3))
+		ret <- ret %>% as_tibble(ret) %>% distinct(和, .keep_all = TRUE) %>% filter(和%%2==0,和<=n) %>% bind_rows(d) %>% arrange(和)
+		if(all(even %in% ret$和)){
+			return(ret)
+		}else{
+			return(paste0(setdiff(even, ret$和),"不成立！"))
+		}
+	}else{
+		return("输入有误")
+	}
+}
